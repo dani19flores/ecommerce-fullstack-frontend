@@ -30,6 +30,9 @@ export function Navbar() {
 
           {isAuthenticated ? (
             <>
+              <Link to="/orders" className="text-gray-600 hover:text-gray-900">
+                Mis pedidos
+              </Link>
               <span className="text-gray-500">Hola, {user?.username}</span>
               <button
                 onClick={handleLogout}

@@ -1,16 +1,41 @@
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 import { useCart } from '../hooks/useCart'
+import { useOrders } from '../hooks/useOrders'
 
 export function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart()
+  const { checkout } = useOrders()
   const navigate = useNavigate()
 
-  function handleConfirm() {
-    // Todavía no hay un endpoint de órdenes en el backend: por ahora el
-    // checkout solo vacía el carrito localmente y muestra la confirmación.
-    clearCart()
-    navigate('/post-checkout')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  // Recuerda si hubo items al montar: tras confirmar, clearCart() vacía
+  // el carrito antes de navegar y por un instante items.length sería 0
+  // en este mismo render — sin esto se dispararía el <Navigate> de abajo
+  // en vez de dejar completar la navegación a /post-checkout.
+  const [hadItemsOnMount] = useState(() => items.length > 0)
+
+  if (!hadItemsOnMount) {
+    return <Navigate to="/cart" replace />
+  }
+
+  async function handleConfirm() {
+    setError(null)
+    setIsSubmitting(true)
+    try {
+      // El pedido lo crea de verdad el backend (billing profile, cart,
+      // order en la base de datos) — el total que se muestra aquí es
+      // solo referencia, el que manda el precio real es el servidor.
+      await checkout(items)
+      clearCart()
+      navigate('/post-checkout')
+    } catch {
+      setError('No se pudo confirmar el pedido. Intenta de nuevo.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -28,13 +53,16 @@ export function CheckoutPage() {
         ))}
       </ul>
 
+      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
       <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
         <span className="text-lg font-semibold text-gray-900">Total: ${totalPrice.toFixed(2)}</span>
         <button
           onClick={handleConfirm}
-          className="rounded-md bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-700"
+          disabled={isSubmitting}
+          className="rounded-md bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-700 disabled:opacity-50"
         >
-          Confirmar y pagar
+          {isSubmitting ? 'Confirmando...' : 'Confirmar y pagar'}
         </button>
       </div>
     </main>

@@ -6,6 +6,7 @@ import { CartPage } from '../pages/CartPage'
 import { CheckoutPage } from '../pages/CheckoutPage'
 import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
+import { OrdersPage } from '../pages/OrdersPage'
 import { PostCheckoutPage } from '../pages/PostCheckoutPage'
 import { RegisterPage } from '../pages/RegisterPage'
 
@@ -34,6 +35,14 @@ export function AppRouter() {
           }
         />
         <Route path="/post-checkout" element={<PostCheckoutPage />} />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <OrdersPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )
