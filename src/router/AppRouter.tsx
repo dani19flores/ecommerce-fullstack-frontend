@@ -12,7 +12,7 @@ import { RegisterPage } from '../pages/RegisterPage'
 
 export function AppRouter() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
